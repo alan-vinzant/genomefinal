@@ -1,0 +1,81 @@
+# activate environment
+
+conda activate genomeanalysis
+
+# assemble the genome files using SPAdes v3.15.5
+
+spades.py -1 SRR32523124_1.fastq.gz -2 SRR32523124_2.fastq.gz -o spadesout
+
+# assemble using ABySS v2.3.7 
+
+abyss-pe name=assembly k=96 B=2G in='SRR32523124_1.fastq.gz SRR32523124_2.fastq.gz'
+
+# Move output files to dedicated folder
+
+mkdir abyssout
+mv assembly* abyssout/
+
+# Run QUAST v5.0.2 to determine the quality of both the SPAdes and ABySS results
+
+quast.py spadesout/scaffolds.fasta -o quastspades
+
+quast.py abyssout/assembly-scaffolds.fa -o quastabyss
+
+# Comparing the results, ABySS had fewer errors, so I will use the ABySS output going forward.
+# Annotate the ABySS results using dfast v1.2.14.
+
+dfast --genome abyssout/assembly-scaffolds.fa --out dfast_output
+
+## Using dfast returns the error: Reference file (/root/miniconda3/envs/genomeanalysis/opt/dfast-1.2.14/db/protein/DFAST-default.ref) does not exist. Aborting...
+
+# Use barrnap v0.9 to identify the 16S rRNA sequence. This will be used to identify the species the genome came from.
+# The output file rRNAsequences.gff will contain information about where in the genome various rRNA sequences are found.
+
+barrnap --kingdom bac abyssout/assembly-scaffolds.fa > rRNAsequences.gff
+
+# Create a file with the info about the rRNA sequences from the previous step, then move the two files into a shared directory. Use bedtools v2.27.1
+
+bedtools getfasta -fi abyssout/assembly-scaffolds.fa -bed rRNAsequences.gff -fo rRNAsequences.fasta
+
+mkdir rRNAinfo
+mv rRNAs* rRNAinfo/
+
+# Download the genomes of two related species into a new folder, "neightbors," then create a "neighbors.txt" file with the paths for the new genomes.
+
+pico neighbors.txt
+
+neighbors/vaviloviae.fasta
+neighbors/caraganae.fasta
+
+# Use fastANI v1.33 to determine the average nucleotide similarity between the original genome and the neighbors
+
+fastANI -q spadesout/scaffolds.fasta --rl neighbors.txt -o boseaneighbors.txt
+
+# Thinking the genome was for a Nitrosomonas sp., I initially tried running fastANI with Nitrosomonas communis and N. ureae as neighbors, but it returned a blank txt file
+
+
+# Assemble using Galaxy through usegalaxy.eu
+
+# SPAdes Galaxy Version 3.15.5+galaxy3 using default settings
+
+# ABySS Galaxy Version 2.3.10+galaxy0 using default settings except k=96
+
+# Use QUAST on the Galaxy SPAdes and ABySS outputs
+
+quast.py spadesoutgalaxy/scaffolds.fasta -o quastspadesgalaxy
+
+quast.py abyssoutgalaxy/scaffolds.fasta -o quastabyssgalaxy
+
+# Use BLASTn to identify 16S rRNA
+# Top results:
+# Bosea vestrisii strain A18/4-2 chromosome, complete genome
+# Bosea sp. Tri-49, complete sequence
+# Uncultured bacterium clone JS03 16S ribosomal RNA gene, partial sequence
+
+# Use BLASTn to identify 23S rRNA
+# Top results:
+# Bosea sp. F3-2 chromosome, complete genome
+# Bosea sp. F3-2 plasmid pB32-1, complete sequence
+# Bosea beijingensis strain REN20 chromosome, complete genome
+
+# Average nucleotide identity using fastANI Galaxy Version 1.3

@@ -1,0 +1,2 @@
+abyssout/assembly-scaffolds.fa	neighbors/caraganae.fasta	83.1295	432	1667
+abyssout/assembly-scaffolds.fa	neighbors/vaviloviae.fasta	82.6085	424	1667
