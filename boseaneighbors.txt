@@ -1,2 +1,2 @@
-abyssout/assembly-scaffolds.fa	neighbors/caraganae.fasta	83.1295	432	1667
-abyssout/assembly-scaffolds.fa	neighbors/vaviloviae.fasta	82.6085	424	1667
+spadesout/scaffolds.fasta	neighbors/vestrisii.fasta	85.6419	1236	2841
+spadesout/scaffolds.fasta	neighbors/beijingesis.fasta	83.0728	1035	2841

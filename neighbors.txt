@@ -1,2 +1,2 @@
-neighbors/vaviloviae.fasta
-neighbors/caraganae.fasta
+neighbors/beijingesis.fasta
+neighbors/vestrisii.fasta
